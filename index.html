@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinthyzz Megh 💖 Chat</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7e0f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 2.5em;
+            color: #e91e63;
+            animation: heartPulse 1.5s infinite;
+        }
+
+        .heart {
+            color: #e91e63;
+            font-size: 30px;
+            animation: pulse 1s infinite alternate;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            animation: fadeIn 1s;
+        }
+
+        .login-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .chat-container {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 1s;
+        }
+
+        .chat-messages {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message-input {
+            width: 80%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .send-btn {
+            padding: 10px 15px;
+            margin-left: 10px;
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .send-btn:hover {
+            background-color: #d81b60;
+        }
+
+        .message {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes heartPulse {
+            0% {
+                color: #e91e63;
+                text-shadow: 0 0 10px rgba(233, 30, 99, 0.6);
+            }
+
+            100% {
+                color: #ff4081;
+                text-shadow: 0 0 20px rgba(233, 30, 99, 0.8);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Screen -->
+    <div class="login-container">
+        <h1>Sinthyzz Megh 💖</h1>
+        <div class="login-form">
+            <input type="text" id="username" placeholder="Enter Username (Sinthy or Megh)" />
+            <input type="password" id="password" placeholder="Enter Password" />
+            <button onclick="login()" class="send-btn">Login</button>
+            <p id="error-message" style="color: red; display: none;">Invalid username or password.</p>
+        </div>
+    </div>
+
+    <!-- Chat Screen -->
+    <div class="chat-container">
+        <h1>Welcome, <span id="user-name"></span>! 💬</h1>
+        <div class="chat-messages" id="chat-messages"></div>
+        <input type="text" id="message" class="message-input" placeholder="Type your message..." />
+        <button onclick="sendMessage()" class="send-btn">Send</button>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMyIFPXI3ehuPXlpycFBv6l6ziPKGpxjI",
+            authDomain: "sinthyzz-megh.firebaseapp.com",
+            projectId: "sinthyzz-megh",
+            storageBucket: "sinthyzz-megh.firebasestorage.app",
+            messagingSenderId: "106256400007",
+            appId: "1:106256400007:web:022085337716da8a514222"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Variables
+        let currentUser = "";
+
+        // Function to check session (if the page reloads)
+        window.onload = () => {
+            // Clear session on page reload (ensures login is required again)
+            localStorage.removeItem('user');
+            document.querySelector('.chat-container').style.display = 'none';
+            document.querySelector('.login-container').style.display = 'flex';
+        };
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Validate credentials
+            if ((username === "Sinthy" || username === "megh") && password === "amandamegh") {
+                currentUser = username;
+                localStorage.setItem('user', currentUser); // Store user session
+                document.getElementById('user-name').innerText = currentUser;
+                document.querySelector('.login-container').style.display = 'none';
+                document.querySelector('.chat-container').style.display = 'block';
+                loadMessages();
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+
+        // Send message function
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message.trim() === "") return;
+
+            db.collection("messages").add({
+                username: currentUser,
+                message: message,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            document.getElementById('message').value = "";
+        }
+
+        // Load messages function
+        function loadMessages() {
+            db.collection("messages").orderBy("timestamp")
+                .onSnapshot((snapshot) => {
+                    const messages = snapshot.docs.map(doc => doc.data());
+                    const chatMessagesDiv = document.getElementById('chat-messages');
+                    chatMessagesDiv.innerHTML = "";
+
+                    messages.forEach(msg => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('chat-message');
+                        messageElement.innerText = `${msg.username}: ${msg.message}`;
+                        chatMessagesDiv.appendChild(messageElement);
+                    });
+
+                    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                });
+        }
+    </script>
+</body>
+
+</html>
